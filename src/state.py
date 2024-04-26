@@ -69,7 +69,7 @@ class State:
     
     def __repr__(self) -> str:
         return (
-            f"Board to_move={self.to_move} status={self.status}\n" + 
+            # f"Board to_move={self.to_move} status={self.status}\n" + 
             '\n'.join([
                 ' '.join([
                     self.at(row, col)

@@ -44,7 +44,46 @@ def minimax_search(game: Game, state: State):
     return move
 
 def alpha_beta_search(game: Game, state: State):
-    pass
+    player = game.to_move(state)
+    
+    def max_value(game: Game, state: State, alpha, beta):
+        
+        if game.terminal_test(state):
+            return game.utility(state, player), None
+        
+        v = -math.inf
+        move = None
+        for a in game.actions(state):
+            
+            v2, a2 = min_value(game, game.result(state, a), alpha, beta)
+            if v2 > v:
+                v, move = v2, a
+                alpha = max(alpha, v)
+            if v >= beta:
+                return v, move
+            
+        return v, move
+    
+    def min_value(game: Game, state: State, alpha, beta):
+        
+        if game.terminal_test(state):
+            return game.utility(state, player), None
+        
+        v = math.inf
+        move = None
+        for a in game.actions(state):
+            
+            v2, a2 = max_value(game, game.result(state, a), alpha, beta)
+            if v2 < v:
+                v, move = v2, a
+                beta = min(beta, v)
+            if v <= alpha:
+                return v, move
+            
+        return v, move
+    
+    value, move = max_value(game, state, -math.inf, math.inf)
+    return move
 
 def monte_carlo_tree_search(game: Game, state: State):
     pass

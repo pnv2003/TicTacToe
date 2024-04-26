@@ -1,5 +1,5 @@
-from src.strategy import minimax_search
+from src.strategy import alpha_beta_search, minimax_search, random_play
 from src.ttt import TicTacToe
 
 game = TicTacToe()
-game.play_game(minimax_search, minimax_search)
+game.play_game(alpha_beta_search, minimax_search)
