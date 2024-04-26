@@ -91,7 +91,10 @@ class TicTacToe(Game):
                 print(f"Player {turn} move: {move}")
                 print(state)
                 if self.terminal_test(state):
-                    print(f"Player {turn} won!... or not")
+                    if state.status == State.DRAW:
+                        print("Draw!")
+                    else:
+                        print(f"Player {turn} won!")
                     self.display(state)
                     return self.utility(state, self.to_move(self.initial))
                 
