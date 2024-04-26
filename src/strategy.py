@@ -1,7 +1,9 @@
+from functools import lru_cache
 import math
 import random
 from src.game import Game
 from src.state import State
+cache = lru_cache(10**6)
 
 def random_play(game: Game, state: State):
     return random.choice(list(game.actions(state)))
@@ -9,7 +11,8 @@ def random_play(game: Game, state: State):
 def minimax_search(game: Game, state: State):
     player = game.to_move(state)
     
-    def max_value(game: Game, state: State):
+    @cache
+    def max_value(state: State):
         
         if game.terminal_test(state):
             return game.utility(state, player), None
@@ -18,13 +21,14 @@ def minimax_search(game: Game, state: State):
         move = None
         for a in game.actions(state):
             
-            v2, a2 = min_value(game, game.result(state, a))
+            v2, a2 = min_value(game.result(state, a))
             if v2 > v:
                 v, move = v2, a
                 
         return v, move
     
-    def min_value(game: Game, state: State):
+    @cache
+    def min_value(state: State):
         
         if game.terminal_test(state):
             return game.utility(state, player), None
@@ -33,20 +37,20 @@ def minimax_search(game: Game, state: State):
         move = None
         for a in game.actions(state):
             
-            v2, a2 = max_value(game, game.result(state, a))
+            v2, a2 = max_value(game.result(state, a))
             if v2 < v:
                 v, move = v2, a
                 
         return v, move
     
-    value, move = max_value(game, state)
+    value, move = max_value(state)
     print(f"Value: {value}")
     return move
 
 def alpha_beta_search(game: Game, state: State):
     player = game.to_move(state)
     
-    def max_value(game: Game, state: State, alpha, beta):
+    def max_value(state: State, alpha, beta):
         
         if game.terminal_test(state):
             return game.utility(state, player), None
@@ -55,7 +59,7 @@ def alpha_beta_search(game: Game, state: State):
         move = None
         for a in game.actions(state):
             
-            v2, a2 = min_value(game, game.result(state, a), alpha, beta)
+            v2, a2 = min_value(game.result(state, a), alpha, beta)
             if v2 > v:
                 v, move = v2, a
                 alpha = max(alpha, v)
@@ -64,7 +68,7 @@ def alpha_beta_search(game: Game, state: State):
             
         return v, move
     
-    def min_value(game: Game, state: State, alpha, beta):
+    def min_value(state: State, alpha, beta):
         
         if game.terminal_test(state):
             return game.utility(state, player), None
@@ -73,7 +77,7 @@ def alpha_beta_search(game: Game, state: State):
         move = None
         for a in game.actions(state):
             
-            v2, a2 = max_value(game, game.result(state, a), alpha, beta)
+            v2, a2 = max_value(game.result(state, a), alpha, beta)
             if v2 < v:
                 v, move = v2, a
                 beta = min(beta, v)
@@ -82,7 +86,7 @@ def alpha_beta_search(game: Game, state: State):
             
         return v, move
     
-    value, move = max_value(game, state, -math.inf, math.inf)
+    value, move = max_value(state, -math.inf, math.inf)
     return move
 
 def monte_carlo_tree_search(game: Game, state: State):

@@ -78,4 +78,24 @@ class State:
                 for row in range(self.h)
             ]) + '\n'
         )
+        
+    def __eq__(self, other: 'State') -> bool:
+        return (
+            self.to_move == other.to_move and
+            self.status == other.status and
+            self.board == other.board
+        )
+    
+    def __hash__(self) -> int:
+        return hash((
+            self.to_move,
+            self.status,
+            tuple(
+                tuple(
+                    self.board[row][col]
+                    for col in range(self.w)
+                )
+                for row in range(self.h)
+            ) 
+        ))
             
