@@ -44,4 +44,3 @@ class Game:
                 if self.terminal_test(state):
                     self.display(state)
                     return self.utility(state, self.to_move(self.initial))
-        
