@@ -44,7 +44,12 @@ class TicTacToe(Game):
         for x in range(1, self.h + 1):
             for y in range(1, self.v + 1):
                 print(board.get((x, y), '.'), end=' ')
+            print(x, end=' ')
             print()
+        
+        for y in range(1, self.v + 1):
+            print(y, end=' ')
+        print()
 
     def compute_utility(self, board, move, player):
         """If 'X' wins with this move, return 1; if 'O' wins return -1; else return 0."""
@@ -59,14 +64,27 @@ class TicTacToe(Game):
     def k_in_row(self, board, move, player, delta_x_y):
         """Return true if there is a line through move on board for player."""
         (delta_x, delta_y) = delta_x_y
+        blocked = 0
+        
         x, y = move
         n = 0  # n is number of moves in row
         while board.get((x, y)) == player:
             n += 1
             x, y = x + delta_x, y + delta_y
+            
+        if board.get((x, y)):
+            blocked += 1
+            
         x, y = move
         while board.get((x, y)) == player:
             n += 1
             x, y = x - delta_x, y - delta_y
+        
+        if board.get((x, y)):
+            blocked += 1
+            
+        if blocked == 2:
+            return False
+            
         n -= 1  # Because we counted move itself twice
         return n >= self.k
