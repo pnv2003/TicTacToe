@@ -1,93 +1,56 @@
-from functools import lru_cache
 import math
-import random
-from src.game import Game
-from src.state import State
-cache = lru_cache(10**6)
 
-def random_play(game: Game, state: State):
-    return random.choice(list(game.actions(state)))
+infinity = math.inf
 
-def minimax_search(game: Game, state: State):
-    player = game.to_move(state)
-    
-    @cache
-    def max_value(state: State):
-        
-        if game.terminal_test(state):
-            return game.utility(state, player), None
-        
-        v = -math.inf
-        move = None
-        for a in game.actions(state):
-            
-            v2, a2 = min_value(game.result(state, a))
-            if v2 > v:
-                v, move = v2, a
-                
-        return v, move
-    
-    @cache
-    def min_value(state: State):
-        
-        if game.terminal_test(state):
-            return game.utility(state, player), None
-        
-        v = math.inf
-        move = None
-        for a in game.actions(state):
-            
-            v2, a2 = max_value(game.result(state, a))
-            if v2 < v:
-                v, move = v2, a
-                
-        return v, move
-    
-    value, move = max_value(state)
-    print(f"Value: {value}")
-    return move
+def cache1(function):
+    "Like lru_cache(None), but only considers the first argument of function."
+    cache = {}
+    def wrapped(x, *args):
+        if x not in cache:
+            cache[x] = function(x, *args)
+        return cache[x]
+    return wrapped
 
-def alpha_beta_search(game: Game, state: State):
-    player = game.to_move(state)
-    
-    def max_value(state: State, alpha, beta):
-        
-        if game.terminal_test(state):
+def cutoff_depth(d):
+    """A cutoff function that searches to depth d."""
+    return lambda game, state, depth: depth > d
+
+def h_alphabeta_search(game, state, cutoff=cutoff_depth(4), h=lambda s, p: 0):
+    """Search game to determine best action; use alpha-beta pruning.
+    As in [Figure 5.7], this version searches all the way to the leaves."""
+
+    player = state.to_move
+
+    @cache1
+    def max_value(state, alpha, beta, depth):
+        if game.is_terminal(state):
             return game.utility(state, player), None
-        
-        v = -math.inf
-        move = None
+        if cutoff(game, state, depth):
+            return h(state, player), None
+        v, move = -infinity, None
         for a in game.actions(state):
-            
-            v2, a2 = min_value(game.result(state, a), alpha, beta)
+            v2, _ = min_value(game.result(state, a), alpha, beta, depth+1)
             if v2 > v:
                 v, move = v2, a
                 alpha = max(alpha, v)
             if v >= beta:
                 return v, move
-            
         return v, move
-    
-    def min_value(state: State, alpha, beta):
-        
-        if game.terminal_test(state):
+
+    @cache1
+    def min_value(state, alpha, beta, depth):
+        if game.is_terminal(state):
             return game.utility(state, player), None
-        
-        v = math.inf
-        move = None
+        if cutoff(game, state, depth):
+            return h(state, player), None
+        v, move = +infinity, None
         for a in game.actions(state):
-            
-            v2, a2 = max_value(game.result(state, a), alpha, beta)
+            v2, _ = max_value(game.result(state, a), alpha, beta, depth + 1)
             if v2 < v:
                 v, move = v2, a
                 beta = min(beta, v)
             if v <= alpha:
                 return v, move
-            
         return v, move
-    
-    value, move = max_value(state, -math.inf, math.inf)
-    return move
 
-def monte_carlo_tree_search(game: Game, state: State):
-    pass
+    return max_value(state, -infinity, +infinity, 0)
