@@ -1,104 +1,40 @@
+from src.board import Board
 from src.game import Game
-from src.state import State
 
 class TicTacToe(Game):
-    MAXPL = State.XMARK # default MAX player
-    
-    def __init__(self, h=3, w=3, k=3) -> None:
-        self.h = h
-        self.w = w
-        self.k = k
-        self.initial = State(h, w, k, to_move=State.XMARK)
-    
-    def actions(self, state: State):
-        return state.possible_moves()
-    
-    def result(self, state: State, move):
-        
-        player = state.to_move
-        res = state.mark(*move)
-        
-        # compute utility
-        if self.k_in_row(res, player, move):
-            res.status = player
-        
-        return res
-    
-    def utility(self, state: State, player):
-        
-        # with open("./test.txt", "a") as f:
-        #     f.write("At state:")
-        #     f.write(str(state))
-        #     f.write("Got util:")
-        #     f.write(str(
-        #         (
-        #             1 if player == TicTacToe.MAXPL
-        #             else -1
-        #         ) if state.game_over
-        #         else 0
-        #     ))
-        #     f.write("\n")
-            
-        if state.status == State.DRAW:
-            return 0
-        
-        if state.status == player:
-            return 1
-        
-        return -1
-        
-    def terminal_test(self, state: State):
-        return state.status != State.DRAW or len(state.possible_moves()) == 0
-        
-    def to_move(self, state: State):
-        return state.to_move
-        
-    def k_in_row(self, state: State, player, move):
-        
-        dir = [
-            (0, 1), (1, 1), 
-            (1, 0), (1, -1)
-        ]
-                    
-        for dr, dc in dir:
-            
-            count = 0
-            
-            r, c = move    
-            while state.at(r, c) == player:
-                count += 1
-                r, c = r + dr, c + dc
-            
-            r, c = move    
-            while state.at(r, c) == player:
-                count += 1
-                r, c = r - dr, c - dc
-                
-            count -= 1
-            if count >= self.k:
-                return True
-            
-        return False
-    
-    def play_game(self, *players):
-        
-        turn = 1
-        state = self.initial
-        while True:
-            for player in players:
-                move = player(self, state)
-                state = self.result(state, move)
-                print(f"Player {turn} move: {move}")
-                print(state)
-                if self.terminal_test(state):
-                    if state.status == State.DRAW:
-                        print("Draw!")
-                    else:
-                        print(f"Player {turn} won!")
-                    self.display(state)
-                    return self.utility(state, self.to_move(self.initial))
-                
-                turn = 3 - turn
-    
-    
-    
+    """Play TicTacToe on an `height` by `width` board, needing `k` in a row to win.
+    'X' plays first against 'O'."""
+
+    def __init__(self, height=3, width=3, k=3):
+        self.k = k # k in a row
+        self.squares = {(x, y) for x in range(width) for y in range(height)}
+        self.initial = Board(height=height, width=width, to_move='X', utility=0)
+
+    def actions(self, board):
+        """Legal moves are any square not yet taken."""
+        return self.squares - set(board)
+
+    def result(self, board, square):
+        """Place a marker for current player on square."""
+        player = board.to_move
+        board = board.new({square: player}, to_move=('O' if player == 'X' else 'X'))
+        win = k_in_row(board, player, square, self.k)
+        board.utility = (0 if not win else +1 if player == 'X' else -1)
+        return board
+
+    def utility(self, board, player):
+        """Return the value to player; 1 for win, -1 for loss, 0 otherwise."""
+        return board.utility if player == 'X' else -board.utility
+
+    def is_terminal(self, board):
+        """A board is a terminal state if it is won or there are no empty squares."""
+        return board.utility != 0 or len(self.squares) == len(board)
+
+    def display(self, board): print(board)     
+
+
+def k_in_row(board, player, square, k):
+    """True if player has k pieces in a line through square."""
+    def in_row(x, y, dx, dy): return 0 if board[x, y] != player else 1 + in_row(x + dx, y + dy, dx, dy)
+    return any(in_row(*square, dx, dy) + in_row(*square, -dx, -dy) - 1 >= k
+               for (dx, dy) in ((0, 1), (1, 0), (1, 1), (1, -1)))
