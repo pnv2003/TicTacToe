@@ -1,5 +1,4 @@
 import math
-
 infinity = math.inf
 
 def cache1(function):
