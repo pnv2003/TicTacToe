@@ -1,5 +1,6 @@
-from src.strategy import alpha_beta_search, minimax_search, random_play
+from src.game import play_game
+from src.player import player, random_player
+from src.strategy import h_alphabeta_search
 from src.ttt import TicTacToe
 
-game = TicTacToe()
-game.play_game(alpha_beta_search, minimax_search)
+play_game(TicTacToe(height=9, width=9, k=5), {'X':player(h_alphabeta_search), 'O':random_player})
