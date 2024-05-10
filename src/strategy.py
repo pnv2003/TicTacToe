@@ -1,21 +1,21 @@
 import math
-def cache1(function):
-    "Like lru_cache(None), but only considers the first argument of function."
-    cache = {}
-    def wrapped(x, *args):
-        if x not in cache:
-            cache[x] = function(x, *args)
-        return cache[x]
-    return wrapped
+# def cache1(function):
+#     "Like lru_cache(None), but only considers the first argument of function."
+#     cache = {}
+#     def wrapped(x, *args):
+#         if x not in cache:
+#             cache[x] = function(x, *args)
+#         return cache[x]
+#     return wrapped
 
-def alpha_beta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
+def alpha_beta_cutoff_search(game, state, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
     This version cuts off search and uses an evaluation function."""
 
     player = game.to_move(state)
 
     # Functions used by alpha_beta
-    @cache1
+    # @cache1
     def max_value(state, alpha, beta, depth):
         if cutoff_test(state, depth):
             return eval_fn(state)
@@ -27,7 +27,7 @@ def alpha_beta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             alpha = max(alpha, v)
         return v
 
-    @cache1
+    # @cache1
     def min_value(state, alpha, beta, depth):
         if cutoff_test(state, depth):
             return eval_fn(state)
